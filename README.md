@@ -36,3 +36,12 @@ If last Houdini build is 16.5.123 HFS will be _/opt/houdini/16.5.123_ or _c:\sof
 - Windows or Linux
 - python 2.7
 - Modules requests and BeautifulSoup
+
+### Tested on
+
+- Windows 10 x64
+- Ubuntu 16.04
+
+### Customize
+
+You may customize any installation flags or algorithm for you pipeline. If you can ;)
