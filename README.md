@@ -14,6 +14,8 @@ For Windows and Linux
 
 Use command line:
 
+Set **USERNAME** and **PASSWORD** of SideFx Site Account
+
 _(linux)_
 ```bash
 python ./houdini_install.py -u myusername -p mypassword -i /opt/houdini
