@@ -21,7 +21,7 @@ _(linux)_
 python ./houdini_install.py -u myusername -p mypassword -i /opt/houdini
 ```
 
-_(windows)_
+_(windows start as admin!)_
 ```cmd
 python c:\scripts\houdini_install.py -u myusername -p mypassword -i c:\software\houdini
 ```
