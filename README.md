@@ -7,11 +7,11 @@ Good solution for studio pipeline!
 
 ### What does it do
 
-- Login in SideFx site using USERNAME and PASSWORD
-- Looking for the latest Houdini production build on page http://www.sidefx.com/download/daily-builds/
-- Download the latest build if not downloaded or file is broken
-- Extract archive (Linux)
-- Start silent installation Houdini only (no Engine or any Servers)
+- Logs in SideFx site using USERNAME and PASSWORD
+- Looking for the latest Houdini production build at http://www.sidefx.com/download/daily-builds/
+- Downloads the latest build if it is not yet downloaded or file is corrupted
+- Extracts archive (Linux)
+- Starts silent installation of Houdini only (no Engine or any Servers)
 
 ### How to
 
