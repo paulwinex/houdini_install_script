@@ -3,6 +3,7 @@
 ### What is it
 
 Automatically download and install last Houdini build.
+Good solution for studio pipeline!
 
 ### What does it do
 
