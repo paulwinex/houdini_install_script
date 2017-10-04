@@ -2,14 +2,14 @@
 
 ### What is it
 
-Automatically download and install last Houdini build.
+Automatically downloads and installs last Houdini build.
 Good solution for studio pipeline!
 
 ### What does it do
 
 - Login in SideFx site using USERNAME and PASSWORD
-- Looking for the last Houdini production build on page http://www.sidefx.com/download/daily-builds/
-- Download the last build if not downloaded or file is broken
+- Looking for the latest Houdini production build on page http://www.sidefx.com/download/daily-builds/
+- Download the latest build if not downloaded or file is broken
 - Extract archive (Linux)
 - Start silent installation Houdini only (no Engine or any Servers)
 
@@ -42,6 +42,3 @@ If last Houdini build is 16.5.123 HFS will be _/opt/houdini/16.5.123_ or _c:\sof
 - Windows 10 x64
 - Ubuntu 16.04
 
-### Customize
-
-You may customize any installation flags or algorithm for you pipeline. If you can ;)
