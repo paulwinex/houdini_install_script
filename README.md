@@ -24,6 +24,6 @@ _(windows)_
 python c:\scripts\houdini_install.py -u myusername -p mypassword -i c:\software\houdini
 ```
 
-Script will install houdini to folder <installation_dir>/<build>/
+Script will install houdini to folder _installation_dir/build/_
 
 If last Houdini build is 16.5.123 HFS will be _/opt/houdini/16.5.123_ or _c:\software\houdini\16.5.123_
