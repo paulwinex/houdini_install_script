@@ -179,6 +179,7 @@ if os.name == 'posix':
     # sudo chown -R paul: /opt/houdini/16.0.705
     # sudo chmod 777 -R
     # whoami
+    # setup permission
     os.system('chown -R %s: %s' % (getpass.getuser(), out_dir))
     os.system('chmod 777 -R ' + out_dir)
     # delete downloaded file
@@ -193,9 +194,9 @@ else:
           '/EngineMaya=No /EngineUnreal=No /HQueueServer=No ' \
           '/HQueueClient=No /IndustryFileAssociations=Yes /InstallDir="{install_dir}" ' \
           '/LicenseServer=No /ForceLicenseServer=No /MainApp=Yes /Registry=Yes'.format(
-        houdini_install=local_filename,
-        install_dir=out_dir
-        )
+            houdini_install=local_filename,
+            install_dir=out_dir
+            )
     print 'CMD:\n' + cmd
     print 'Start install...'
     os.system(cmd)
