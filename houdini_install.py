@@ -1,5 +1,5 @@
 import sys, re, os, shutil, argparse
-import ctypes
+import getpass
 try:
     import requests
 except ImportError:
@@ -48,6 +48,7 @@ def create_output_dir(istall_dir, build):
 
 
 def windows_is_admin():
+    import ctypes
     try:
         is_admin = os.getuid() == 0
     except AttributeError:
@@ -155,14 +156,14 @@ print 'Start install Houdini'
 if os.name == 'posix':
     # unzip
     print 'Unpack "%s" to "%s"' % (local_filename, tmp_folder)
-    cmd = 'tar xf {} -C {}'.format(local_filename, tmp_folder)
+    cmd = 'sudo tar xf {} -C {}'.format(local_filename, tmp_folder)
     os.system(cmd)
     # os.remove(local_filename)
     install_file = os.path.join(tmp_folder, os.path.splitext(os.path.splitext(os.path.basename(local_filename))[0])[0], 'houdini.install')
     print 'Install File', install_file
     # ./houdini.install --auto-install --accept-EULA --make-dir /opt/houdini/16.0.705
     out_dir = create_output_dir(install_dir, build)
-    cmd = './houdini.install {} {}'.format(
+    cmd = 'sudo ./houdini.install {} {}'.format(
         '--auto-install --accept-EULA --make-dir',
         out_dir
     )
@@ -177,7 +178,8 @@ if os.name == 'posix':
     os.system(cmd)
     # sudo chown -R paul: /opt/houdini/16.0.705
     # sudo chmod 777 -R
-    os.system('chown -R paul: ' + out_dir)
+    # whoami
+    os.system('chown -R %s: %s' % (getpass.getuser(), out_dir))
     os.system('chmod 777 -R ' + out_dir)
     # delete downloaded file
     # shutil.rmtree(tmp_folder)
