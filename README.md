@@ -31,6 +31,13 @@ Script will install houdini to folder _installation_dir/build/_
 
 If last Houdini build is 16.5.123 HFS will be _/opt/houdini/16.5.123_ or _c:\software\houdini\16.5.123_
 
+## Flags
+
+- `-i --install_dir` - Installation dir. Required.
+- `-u --username` - SideFX site username 
+- `-p --password` - SideFX site password 
+- `-s --server` - Install Houdini License Server. `y/yes`, `n/no`, `a/auto`. Default `auto`.
+
 ### Requires
 
 - Windows or Linux

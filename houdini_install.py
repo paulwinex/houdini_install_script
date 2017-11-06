@@ -14,9 +14,11 @@ except ImportError:
 
 # VARIABLES ################################
 parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--install_dir", type=str, help="Instalation dir")
+parser.add_argument("-i", "--install_dir", type=str, help="Installation dir")
 parser.add_argument("-u", "--username", type=str, help="SideFx account username")
 parser.add_argument("-p", "--password", type=str, help="SideFx account password")
+parser.add_argument("-s", "--server", type=str, help="Install License server (y/yes, n/no, a/auto, default auto)")
+# parser.add_argument("-hq", "--hqserver", type=str, help="Install HQ server (y/yes, n/no, a/auto, default auto)")
 
 _args, other_args = parser.parse_known_args()
 username = _args.username
@@ -28,10 +30,34 @@ if not username or not password:
 
 install_dir = _args.install_dir
 if not install_dir:
-    print 'ERROR: Please set installation folder in argument -i. For example: -i "%s"' % ('/opt/houdini' if os.name == 'postx' else 'c:\\cgsoft\\houdini')
+    print 'ERROR: Please set installation folder in argument -i. For example: -i "%s"' % ('/opt/houdini' if os.name == 'postx' else 'c:\\cg\\houdini')
     sys.exit()
 install_dir = install_dir.replace('\\', '/').rstrip('/')
 tmp_folder = os.path.expanduser('~/temp_houdini')
+
+# license server
+lic_server = False
+if os.name == 'nt':
+    if not os.path.exists('C:/Windows/System32/sesinetd.exe'):
+        lic_server = True
+elif os.name == 'posix':
+    if not os.path.exists('/usr/lib/sesi/sesinetd'):
+        lic_server = True
+
+if _args.server:
+    if _args.server in ['y', 'yes']:
+        lic_server = True
+    elif _args.server in ['n', 'no']:
+        lic_server = False
+
+# hq server
+# hq_server = False
+# if os.name == 'nt':
+#     if not os.path.exists('C:/Windows/System32/sesinetd.exe'):
+#         lic_server = True
+# elif os.name == 'posix':
+#     if not os.path.exists(''):
+#         lic_server = True
 
 
 ############################################################# START #############
@@ -163,9 +189,12 @@ if os.name == 'posix':
     print 'Install File', install_file
     # ./houdini.install --auto-install --accept-EULA --make-dir /opt/houdini/16.0.705
     out_dir = create_output_dir(install_dir, build)
-    cmd = 'sudo ./houdini.install {} {}'.format(
-        '--auto-install --accept-EULA --make-dir',
-        out_dir
+    flags = '--auto-install --accept-EULA --make-dir'
+    if lic_server:
+        pass
+    cmd = 'sudo ./houdini.install {flags} {dir}'.format(
+        flags=flags,
+        dir=out_dir
     )
     print 'Create output folder', out_dir
     if not os.path.exists(out_dir):
@@ -189,11 +218,12 @@ else:
     print 'Create output folder', out_dir
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
-    cmd = '"{houdini_install}" /S /AcceptEula=yes /LicenseServer=No /DesktopIcon=No ' \
+    cmd = '"{houdini_install}" /S /AcceptEula=yes /LicenseServer={lic_server} /DesktopIcon=No ' \
           '/FileAssociations=Yes /HoudiniServer=No /EngineUnity=No ' \
           '/EngineMaya=No /EngineUnreal=No /HQueueServer=No ' \
           '/HQueueClient=No /IndustryFileAssociations=Yes /InstallDir="{install_dir}" ' \
-          '/LicenseServer=No /ForceLicenseServer=No /MainApp=Yes /Registry=Yes'.format(
+          '/ForceLicenseServer={lic_server} /MainApp=Yes /Registry=Yes'.format(
+            lic_server='Yes' if lic_server else 'No',
             houdini_install=local_filename,
             install_dir=out_dir
             )
