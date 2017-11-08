@@ -2,7 +2,7 @@
 
 ### What is it
 
-Automatically downloads and installs last Houdini build.
+Automatically downloads and installs latest Houdini build.
 Good solution for studio pipeline!
 
 ### What does it do
@@ -36,13 +36,18 @@ If last Houdini build is 16.5.123 HFS will be _/opt/houdini/16.5.123_ or _c:\sof
 - `-i --install_dir` - Installation dir. Required.
 - `-u --username` - SideFX site username 
 - `-p --password` - SideFX site password 
-- `-s --server` - Install Houdini License Server. `y/yes`, `n/no`, `a/auto`. Default `auto`.
+- `-s --server` - Install Houdini License Server. `y/yes`, `n/no`, `a/auto`. Default `auto` (experimental)
 
 ### Requires
 
 - Windows or Linux
 - python 2.7
-- Modules requests and BeautifulSoup
+- Python Modules `requests` and `BeautifulSoup`
+
+To install modules call command
+```bash
+pip install beautifulsoup4 requests
+```
 
 ### Tested on
 
