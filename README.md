@@ -1,8 +1,8 @@
-# Houdini Auto Install Script
+# Houdini Silent Install Script
 
 ### What is it
 
-Automatically downloads and installs latest Houdini build.
+Automatically (silent) downloads and installs latest Houdini build.
 Good solution for studio pipeline!
 
 ### What does it do
@@ -11,7 +11,7 @@ Good solution for studio pipeline!
 - Looking for the latest Houdini production build at http://www.sidefx.com/download/daily-builds/
 - Downloads the latest build if it is not yet downloaded or file is corrupted
 - Extracts archive (Linux)
-- Starts silent installation of Houdini only (no Engine or any Servers)
+- Starts silent installation of Houdini only
 
 ### How to
 
