@@ -1,15 +1,17 @@
+from __future__ import print_function
 import sys, re, os, shutil, argparse
 import getpass
+
 try:
     import requests
 except ImportError:
-    print 'This script require requests module.\n Install: pip install requests'
+    print('This script require requests module.\n Install: pip install requests')
     sys.exit()
 try:
     from bs4 import BeautifulSoup
 except ImportError:
-    print 'This scrip require BeautifulSoup package (https://www.crummy.com/software/BeautifulSoup/bs4/doc/#).' \
-          '\nInstall: pip install beautifulsoup4'
+    print('This scrip require BeautifulSoup package (https://www.crummy.com/software/BeautifulSoup/bs4/doc/#).' 
+          '\nInstall: pip install beautifulsoup4')
     sys.exit()
 
 # VARIABLES ################################
@@ -18,19 +20,21 @@ parser.add_argument("-i", "--install_dir", type=str, help="Installation dir")
 parser.add_argument("-u", "--username", type=str, help="SideFx account username")
 parser.add_argument("-p", "--password", type=str, help="SideFx account password")
 parser.add_argument("-s", "--server", type=str, help="Install License server (y/yes, n/no, a/auto, default auto)")
-# parser.add_argument("-hq", "--hqserver", type=str, help="Install HQ server (y/yes, n/no, a/auto, default auto)")
+parser.add_argument("-pr", "--production", help="Filter only production builds", action='store_true')
+
 
 _args, other_args = parser.parse_known_args()
 username = _args.username
 password = _args.password
 if not username or not password:
-    print 'Please set username and password'
-    print 'Example: -u username -p password'
+    print('Please set username and password')
+    print('Example: -u username -p password')
     sys.exit()
 
 install_dir = _args.install_dir
 if not install_dir:
-    print 'ERROR: Please set installation folder in argument -i. For example: -i "%s"' % ('/opt/houdini' if os.name == 'postx' else 'c:\\cg\\houdini')
+    print('ERROR: Please set installation folder in argument -i. For example: -i "%s"' % (
+        '/opt/houdini' if os.name == 'postx' else 'c:\\cg\\houdini'))
     sys.exit()
 install_dir = install_dir.replace('\\', '/').rstrip('/')
 tmp_folder = os.path.expanduser('~/temp_houdini')
@@ -50,20 +54,11 @@ if _args.server:
     elif _args.server in ['n', 'no']:
         lic_server = False
 
-# hq server
-# hq_server = False
-# if os.name == 'nt':
-#     if not os.path.exists('C:/Windows/System32/sesinetd.exe'):
-#         lic_server = True
-# elif os.name == 'posix':
-#     if not os.path.exists(''):
-#         lic_server = True
-
 
 ############################################################# START #############
 
 
-def create_output_dir(istall_dir, build):
+def create_output_dir(install_dir, build):
     """
     Change this to define installation folder
     """
@@ -84,63 +79,76 @@ def windows_is_admin():
 
 # define OS
 if os.name == 'nt':
-    category = 'win'
     if not windows_is_admin():
-        print 'Run this script as administrator'
+        print('Run this script as administrator')
         sys.exit()
-elif os.name == 'posix':
-    category = 'linux'
-else:
-    raise Exception('This OS not supported')
-
-# create client
+# urls
+BASE_URL = 'https://www.sidefx.com/'
+LOGIN_URL = BASE_URL+'login/'
+BUILDS_URL = BASE_URL+'download/daily-builds/get/'
+# current os
+OS = dict(win32='win', linux='linux', darwin='mac')[sys.platform]
 client = requests.session()
-# Retrieve the CSRF token first
-URL = 'https://www.sidefx.com/login/'
-print 'Login on %s ...' % URL
-client.get(URL)  # sets cookie
+# sets cookie
+client.get(LOGIN_URL)
 csrftoken = client.cookies['csrftoken']
 # create login data
 login_data = dict(username=username, password=password, csrfmiddlewaretoken=csrftoken, next='/')
 # login
-r = client.post(URL, data=login_data, headers=dict(Referer=URL))
+print('Login on %s ...' % LOGIN_URL)
+client.post(LOGIN_URL, data=login_data, headers=dict(Referer=BASE_URL))
 
-# goto daily builds page
-print 'Get last build version...'
-page = client.get('http://www.sidefx.com/download/daily-builds/')
 
-# parse page
-s = BeautifulSoup(page.content, 'html.parser')
+def get_builds():
+    # request all builds
+    content = client.get(BUILDS_URL)
+    data = content.json()
+    from collections import defaultdict
+    builds = defaultdict(dict)
+    for build in data['daily_builds_releases']:
+        if build['product'] == 'houdini':
+            build_name = f"{build['version']}.{build['build']}"
+            builds[build_name]['build'] = build_name
+            builds[build_name]['is_production'] = build['release'] == 'gold'
+            builds[build_name]['urls'] = builds[build_name].get('urls', defaultdict(list))
+            builds[build_name]['urls'][build['os']].append(dict(filename=build['display_name'],
+                                                                url=BASE_URL + build['download_url'] + 'get/'))
+    builds = [{'urls': dict(v['urls']), 'build': k, 'is_production': v['is_production']} for k, v in builds.items()]
+    return builds
 
-# get all versions
-# lin = s.findAll('div', {'class': lambda x: x and 'category-' + categorys['linux'] in x.split()})
+# create client
 
-# get last version
-a = s.find('div', {'class': lambda x: x and 'category-'+category in x.split()}).find('a')
+# Retrieve the CSRF token first
 
-# get build
-build = re.match(r".*?(\d+\.\d+\.\d+).*", str(a.text)).group(1)
-print 'Last build is ', build
+builds = get_builds()
+builds = [x for x in builds if OS in x['urls']]
+if _args.production:
+    builds = [x for x in builds if x['is_production']]
+from pprint import pprint
+pprint(builds)
+build = sorted(builds, key=lambda x: x['build'], reverse=True)[0]
+print('Latest build is:', build['build'])
 
 # check your last version here
 if not os.path.exists(install_dir):
     os.makedirs(install_dir)
 
 if build in os.listdir(install_dir):
-    print 'Build {} already installed'.format(build)
+    print('Build {} already installed'.format(build))
     sys.exit()
 
 # if your version is lower go to download
-print 'Start download...'
+print('Start download...')
 # download url
-url = 'http://www.sidefx.com' + a.get('href').split('=')[-1] + 'get/'
-print '  DOWNLOAD URL:', url
+url = build['urls'][OS][0]['url']
+filename = build['urls'][OS][0]['filename']
+print('  DOWNLOAD URL:', url)
 
 # create local file path
 if not os.path.exists(tmp_folder):
     os.makedirs(tmp_folder)
-local_filename = os.path.join(tmp_folder, a.text).replace('\\', '/')
-print '  Local File:', local_filename
+local_filename = os.path.join(tmp_folder, filename).replace('\\', '/')
+print('  Local File:', local_filename)
 
 # get content
 resp = client.get(url, stream=True)
@@ -152,12 +160,12 @@ if os.path.exists(local_filename):
         os.remove(local_filename)
     else:
         # skip downloading if file already exists
-        print 'Skip download'
+        print('Skip download')
         need_to_download = False
 
 if need_to_download:
     # download file
-    print 'Total size %sMb' % int(total_length/1024.0/1024.0)
+    print('Total size %sMb' % int(total_length / 1024.0 / 1024.0))
     block_size = 1024*4
     dl = 0
     with open(local_filename, 'wb') as f:
@@ -174,19 +182,19 @@ if need_to_download:
                                                             )
                                  )
                 sys.stdout.flush()
-    print
-    print 'Download complete'
+    print()
+    print('Download complete')
 
 # start silent installation
-print 'Start install Houdini'
+print('Start install Houdini')
 if os.name == 'posix':
     # unzip
-    print 'Unpack "%s" to "%s"' % (local_filename, tmp_folder)
+    print('Unpack "%s" to "%s"' % (local_filename, tmp_folder))
     cmd = 'sudo tar xf {} -C {}'.format(local_filename, tmp_folder)
     os.system(cmd)
     # os.remove(local_filename)
     install_file = os.path.join(tmp_folder, os.path.splitext(os.path.splitext(os.path.basename(local_filename))[0])[0], 'houdini.install')
-    print 'Install File', install_file
+    print('Install File', install_file)
     # ./houdini.install --auto-install --accept-EULA --make-dir /opt/houdini/16.0.705
     out_dir = create_output_dir(install_dir, build)
     flags = '--auto-install --accept-EULA --make-dir'
@@ -196,13 +204,13 @@ if os.name == 'posix':
         flags=flags,
         dir=out_dir
     )
-    print 'Create output folder', out_dir
+    print('Create output folder', out_dir)
     if not os.path.exists(out_dir):
-        print 'Create folder:', out_dir
+        print('Create folder:', out_dir)
         os.makedirs(out_dir)
-    print 'Start install...'
+    print('Start install...')
     # print 'CMD:\n'+cmd
-    print 'GoTo', os.path.dirname(install_file)
+    print('GoTo', os.path.dirname(install_file))
     os.chdir(os.path.dirname(install_file))
     os.system(cmd)
     # sudo chown -R paul: /opt/houdini/16.0.705
@@ -215,7 +223,7 @@ if os.name == 'posix':
     # shutil.rmtree(tmp_folder)
 else:
     out_dir = create_output_dir(install_dir, build)
-    print 'Create output folder', out_dir
+    print('Create output folder', out_dir)
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
     cmd = '"{houdini_install}" /S /AcceptEula=yes /LicenseServer={lic_server} /DesktopIcon=No ' \
@@ -227,7 +235,7 @@ else:
             houdini_install=local_filename,
             install_dir=out_dir
             )
-    print 'CMD:\n' + cmd
-    print 'Start install...'
+    print('CMD:\n' + cmd)
+    print('Start install...')
     os.system(cmd)
-    print 'If installation not happen, repeat process.'
+    print('If installation not happen, repeat process.')
