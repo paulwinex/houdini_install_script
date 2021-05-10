@@ -107,7 +107,7 @@ def get_builds():
     builds = defaultdict(dict)
     for build in data['daily_builds_releases']:
         if build['product'] == 'houdini':
-            build_name = f"{build['version']}.{build['build']}"
+            build_name = "{}.{}".format(build['version'], build['build'])
             builds[build_name]['build'] = build_name
             builds[build_name]['is_production'] = build['release'] == 'gold'
             builds[build_name]['urls'] = builds[build_name].get('urls', defaultdict(list))
