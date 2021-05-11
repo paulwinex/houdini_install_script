@@ -87,7 +87,7 @@ BASE_URL = 'https://www.sidefx.com/'
 LOGIN_URL = BASE_URL+'login/'
 BUILDS_URL = BASE_URL+'download/daily-builds/get/'
 # current os
-OS = dict(win32='win', linux='linux', darwin='mac')[sys.platform]
+OS = dict(win32='win', linux='linux', linux2='linux', darwin='mac')[sys.platform]
 client = requests.session()
 # sets cookie
 client.get(LOGIN_URL)
@@ -196,7 +196,7 @@ if os.name == 'posix':
     install_file = os.path.join(tmp_folder, os.path.splitext(os.path.splitext(os.path.basename(local_filename))[0])[0], 'houdini.install')
     print('Install File', install_file)
     # ./houdini.install --auto-install --accept-EULA --make-dir /opt/houdini/16.0.705
-    out_dir = create_output_dir(install_dir, build)
+    out_dir = create_output_dir(install_dir, build['build'])
     flags = '--auto-install --accept-EULA --make-dir'
     if lic_server:
         pass
@@ -222,7 +222,7 @@ if os.name == 'posix':
     # delete downloaded file
     # shutil.rmtree(tmp_folder)
 else:
-    out_dir = create_output_dir(install_dir, build)
+    out_dir = create_output_dir(install_dir, build['build'])
     print('Create output folder', out_dir)
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
